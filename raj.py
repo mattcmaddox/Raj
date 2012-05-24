@@ -22,21 +22,23 @@ treasure_drawn = choice(treasure_deck)
 # Remove chosen treasure from treasure_deck
 treasure_deck = treasure_deck.remove(treasure_drawn)
 
-# Takes the player's guess
-def player0input(treasure, hand):
-    print "The treasure to bid on is %i, what will you bid?" % treasure
-    bid = raw_input("> ")
-    bid = int(bid)
-    bid = bid_checker(bid, hand)
-    return bid
+def bid_checker(bid, hand):
+    try: 
+        bid = int(bid)
+    except:
+        print "Words are not numbers"
+    return bid 
 
 # Checks and makes sure that the guess is a valid one
-def bid_checker(bid, hand):
+def player0input(treasure, hand):
+    bid = 0
     while bid not in hand:
-        print "Guess again from ", hand
+        print "The treasure is: *%i*" % treasure
+        print "Guess from "
+        print hand
         bid = raw_input("> ")
+        bid = bid_checker(bid, hand)
     return bid
-
 
 
 
@@ -60,40 +62,22 @@ def find_next_highest(bid, hand):
 
 
 
-# Finds the closest card in hand - Defaults to return the lower value if equal distance
+# Finds the closest card in hand - Defaults to return the lower value if equal distance 
+# **might not be true anymore**
 def find_closest_card(bid, hand):
     i = 0
     falling_bid = bid 
     raising_bid = bid 
-    while (bid in hand) == False:
+    while (falling_bid or raising_bid) not in hand:
         i += 1
         print "%i times through the loop" % i
-
-        falling_bid = find_next_lowest(falling_bid, hand)
-        raising_bid = find_next_highest(raising_bid, hand)
-        print "first bid = %i " % bid
-        
-        if ((falling_bid in hand) == True) or ((raising_bid in hand) == True):
-            if ((falling_bid in hand)  == True):
-                print "it was a FALLING bid!!"
-                bid = falling_bid
-            else:
-                print "it was a RAISING bid!!"
-                bid = raising_bid
-            print "final bid = %i " % bid
-            print "falling_bid = %i " % falling_bid
-            print "raising_bid = %i " % raising_bid
-            return bid
-        else:
-            print "Trying again from top of scope"
+        falling_bid -= 1
+        raising_bid += 1
+    if falling_bid in hand:
+        bid = falling_bid
+    elif raising_bid in hand:
+        bid = raising_bid
     return bid
-
-
-#dumb_card = randint(-15, 30)
-#dumb_card = 5
-#tester = find_closest_card(dumb_card, players_hands[1])
-#tester = find_closest_card(dumb_card, [1, 9])
-#print tester
 
 
 
@@ -168,7 +152,7 @@ print player0bid
 ########### C O M M E N T   O U T ###########
 #############################################
 
-print "treasure_drawn  =  %i" % treasure_drawn
+print "treasure_drawn  = *%i*" % treasure_drawn
 print "computer's bids = ", player1bid, player2bid, player3bid
 print "user's bid      =  %i" % player0bid
 
