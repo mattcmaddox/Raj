@@ -2,7 +2,7 @@ from random import choice
 from random import randint
 
 # Simple range variable 1-15
-random_card = randint(1, 15)
+#random_card = randint(1, 15)
 
 # Creates a list with values of 1-15
 hand = list(range(1, 16))
@@ -11,7 +11,7 @@ hand = list(range(1, 16))
 players_hands = [list(hand), list(hand), list(hand), list(hand)]
 
 # Creates a list of treasures valued -5-10 
-treasure_deck = list(range(-5, 16))
+treasure_deck = list(range(-5, 11))
 
 # Removes zero-valued treasure from list
 treasure_deck.remove(0)
@@ -22,6 +22,7 @@ treasure_drawn = choice(treasure_deck)
 # Remove chosen treasure from treasure_deck
 treasure_deck = treasure_deck.remove(treasure_drawn)
 
+# Checks and makes sure that the guess is NOT a string or a word
 def bid_checker(bid, hand):
     try: 
         bid = int(bid)
@@ -29,36 +30,18 @@ def bid_checker(bid, hand):
         print "Words are not numbers"
     return bid 
 
-# Checks and makes sure that the guess is a valid one
+# Human input
 def player0input(treasure, hand):
     bid = 0
     while bid not in hand:
-        print "The treasure is: *%i*" % treasure
-        print "Guess from "
+        print "\nThe treasure is: *%i*" % treasure
+        print "Choose from "
         print hand
         bid = raw_input("> ")
         bid = bid_checker(bid, hand)
     return bid
 
 
-
-# Finds the next LOWEST card till the card is in the hand
-def find_next_lowest(bid, hand):
-    if (bid in hand) == True:
-        print "bid was in hand in 'find_next_lowest'"
-    else:
-        bid -= 1
-        #print "'next_lowest' bid was NOT in hand, decreasing"
-    return bid
-
-# Finds the next HIGHEST card till the card is in the hand
-def find_next_highest(bid, hand):
-    if (bid in hand) == True:
-        print "bid was in hand in 'find_next_highest'"
-    else:
-        bid += 1
-        #print "'next_highest' bid was NOT in hand, increasing"
-    return bid
 
 
 
@@ -68,9 +51,13 @@ def find_closest_card(bid, hand):
     i = 0
     falling_bid = bid 
     raising_bid = bid 
-    while (falling_bid or raising_bid) not in hand:
+    while (falling_bid and raising_bid) not in hand:
         i += 1
         print "%i times through the loop" % i
+        print falling_bid
+        print raising_bid
+        if i > 19:
+            break
         falling_bid -= 1
         raising_bid += 1
     if falling_bid in hand:
@@ -86,6 +73,8 @@ def find_closest_card(bid, hand):
 
 # Bidding Method 1 - Bid about half the value of the treasure
 def bid_low(treasure, hand):
+    if treasure < 2:
+        treasure = 2
     bid = treasure / 2
     bid = find_closest_card(bid, hand)
     return bid
@@ -140,14 +129,44 @@ def pick_random_ai(treasure, hand):
 ###########    M    A    I    N   ###########
 #############################################
 
-# Set up how computers will bid
-player1bid = pick_random_ai(treasure_drawn, players_hands[1])
-player2bid = bid_out(treasure_drawn, players_hands[2])
-player3bid = bid_random(players_hands[3])
 
 
 player0bid = player0input(treasure_drawn, players_hands[0])
-print player0bid
+# Set up how computers will bid
+player1bid = bid_same(treasure_drawn, players_hands[1])
+player2bid = bid_low(treasure_drawn, players_hands[2])
+player3bid = bid_random(players_hands[3])
+
+all_bids = [player0bid, player1bid, player2bid, player3bid]
+
+#def highest_wins(treasure, bids):
+
+
+def tie_checker(treasure, bids):
+    winning_bid = None
+    for bid in bids:
+        print bid
+        print bids
+        tie = bids.count(bid)
+        print "ties??", tie
+        if tie > 1:
+            print "there's a tie!"
+            winning_bid = tie_breaker(treasure, bids)
+    winning_bid = max(bids[0], bids[1], bids[2], bids[3])
+    return winning_bid
+
+
+def tie_breaker(treasure, bids):
+    print bids
+
+
+#def negitive_treasure(treasure, bids):
+
+#def positive_treasure(treasure, bids):
+    
+foo = tie_checker(treasure_drawn, all_bids)
+print foo
+
 #############################################
 ########### C O M M E N T   O U T ###########
 #############################################
