@@ -1,26 +1,26 @@
-from random import choice
+import collections
+import random
 from random import randint
 
-# Simple range variable 1-15
-#random_card = randint(1, 15)
 
-# Creates a list with values of 1-15
-hand = list(range(1, 16))
+# Creates a set with values of 1-15
+hand = ([1, 2, 3, 4, 5, 6, 7, 8, 9 ,10, 11, 12, 13, 14, 15])
+
+# The number of players:
+number_of_players = 4
+
+# a list of the number of players
+players_list = number_of_players
 
 # Creates all players hands
-players_hands = [list(hand), list(hand), list(hand), list(hand)]
+players_hands = {0: hand, 1: hand, 2: hand, 3: hand}
 
-# Creates a list of treasures valued -5-10 
-treasure_deck = list(range(-5, 11))
-
-# Removes zero-valued treasure from list
-treasure_deck.remove(0)
+# Creates a set of treasures valued -5-10 
+treasure_deck = ([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5 ,6, 7, 8, 9, 10])
 
 # Random pick of a treasure from treasure_deck
-treasure_drawn = choice(treasure_deck)
+treasure_drawn = random.sample(treasure_deck, 1)[0]
 
-# Remove chosen treasure from treasure_deck
-treasure_deck = treasure_deck.remove(treasure_drawn)
 
 # Checks and makes sure that the guess is NOT a string or a word
 def bid_checker(bid, hand):
@@ -94,6 +94,7 @@ def bid_random(hand):
 # Bidding Method 4 - Bid the same as the treasure
 def bid_same(treasure, hand):
     if treasure < 0:
+        print "treasure drawn was a negative!"
         treasure = -treasure
     bid = find_closest_card(treasure, hand)
     return bid
@@ -139,36 +140,74 @@ player3bid = bid_random(players_hands[3])
 
 all_bids = [player0bid, player1bid, player2bid, player3bid]
 
-#def highest_wins(treasure, bids):
+def all_bids_bulider(bids, players):
+    bid_dict = {}
+    for player in range(players):
+        bid = bids[player]
+        print bid
+        if bid in bid_dict:
+            bid_dict[bid].append(player)
+        else:
+            print "else!"
+            bid_dict[bid] = [player]
+    print bid_dict
+    return bid_dict
+
 
 
 def tie_checker(treasure, bids):
-    winning_bid = None
-    for bid in bids:
-        print bid
-        print bids
-        tie = bids.count(bid)
-        print "ties??", tie
-        if tie > 1:
-            print "there's a tie!"
-            winning_bid = tie_breaker(treasure, bids)
-    winning_bid = max(bids[0], bids[1], bids[2], bids[3])
+    instances = collections.Counter(bids.keys())
+    print "instances %r " % instances 
+    instances = max(instances.values())  # highest occurances of a bid
+    print "instances %r " % instances 
+    if instances > 1: 
+        print "running tie breaker"
+        winning_bid = tie_breaker(treasure, bids)
+    else:
+        print "no ties"
+        winning_bid = winner_picker(treasure, bids)
+    return winning_bid
+
+def tie_breaker(treasure, bids):
+    previous_bid = None
+    for bid in sorted(bids, reverse=True):
+        print "bid %r " % bid
+        print " previous bid %r " % previous_bid
+        if previous_bid == bid:
+            print "duplicate!"
+            print "previous bid %r " % previous_bid
+            print "bid %r " % bid
+            print bids
+        previous_bid = bid
+
+    winning_bid = winner_picker(treasure, bids)
+    return winning_bid 
+
+
+
+def winner_picker(treasure, bids):
+    if treasure < 0:
+        winning_bid = negative_treasure(bids)
+    elif treasure > 0:
+        winning_bid = positive_treasure(bids)
+    return winning_bid
+
+def negative_treasure(bids):
+    winning_bid = min(bids.values())
     return winning_bid
 
 
-def tie_breaker(treasure, bids):
-    print bids
+def positive_treasure(bids):
+    winning_bid = max(bids.values())
+    return winning_bid
 
-
-#def negitive_treasure(treasure, bids):
-
-#def positive_treasure(treasure, bids):
-    
-foo = tie_checker(treasure_drawn, all_bids)
-print foo
+print "bids this round: %r" % all_bids   
+bid_dict = all_bids_bulider(all_bids, number_of_players)
+foo = tie_checker(treasure_drawn, bid_dict)
+print "winning bid: %r" % foo
 
 #############################################
-########### C O M M E N T   O U T ###########
+###########    T E S T I N G     ###########
 #############################################
 
 print "treasure_drawn  = *%i*" % treasure_drawn
