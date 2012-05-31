@@ -3,17 +3,28 @@ import random
 from random import randint
 
 
-# Creates a set with values of 1-15
-hand = set([1, 2, 3, 4, 5, 6, 7, 8, 9 ,10, 11, 12, 13, 14, 15])
+number_of_humans = 1
+number_of_computers = 3
+total_players = number_of_humans + number_of_computers
+list_of_players = range(total_players)
 
-# The number of players:
-number_of_players = 4
+def create_players(players):
+    hands = []
+    for player in players:
+        hands.append(set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]))
+    return hands
 
-# Creates all players hands
-players_hands = [hand, hand, hand, hand]
+
+players_hands = create_players(list_of_players)
 
 # Sets players scores to zero
-players_score = [0, 0, 0, 0]
+def create_scores(players):
+    scores = []
+    for player in players:
+        scores.append(0)
+    return scores
+
+scores = create_scores(list_of_players)
 
 # Creates a set of treasures valued -5-10 
 treasure_deck = set([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5 ,6, 7, 8, 9, 10])
@@ -34,7 +45,7 @@ def bid_checker(bid, hand):
     return bid 
 
 # Human input
-def player0input(treasure, hand):
+def human_input(hand, treasure):
     bid = 0
     while bid not in hand:
         print "\nThe treasure is: *%r*" % treasure
@@ -118,12 +129,15 @@ def pick_random_ai(treasure, hand):
 ###########    M    A    I    N   ###########
 #############################################
 
+#def a_players_turn(hands, treasure, seat):
+#    human_input(players_hands[seat])
+
 
 
 treasure_drawn = draw_treasure(treasure_deck)
 
 
-player0bid = player0input(treasure_drawn, players_hands[0])
+player0bid = human_input(players_hands[0], treasure_drawn)
 # Set up how computers will bid
 player1bid = bid_same(treasure_drawn, players_hands[1])
 player2bid = bid_low(treasure_drawn, players_hands[2])
@@ -141,7 +155,7 @@ def biding_dict_builder(bids):
             bid_dict[bid] = [player]
     return bid_dict
 
-def winning_player(bids, treasure):
+def winning_player_finder(bids, treasure):
     bid_dict = biding_dict_builder(bids)
     reverse = treasure > 0
     for bid in sorted(bid_dict, reverse=reverse):
@@ -155,25 +169,28 @@ def remove_cards_from_hands(hands, bids):
     print "bids", bids
     for player in players:
         hands[player].remove(bids[player])
-        print "player", player
-        print "players", players
-    return players_hands
+    return hands
+
+def round_winner_scores(winner, treasure, scores):
+    score = scores.pop(winner)
+    score += treasure
+    score = scores.insert(winner, score)
+    
 
 
-        
 
-
-remove_cards_from_hands(players_hands, all_bids)
-foo = winning_player(all_bids, treasure_drawn)
+round_winner = winning_player_finder(all_bids, treasure_drawn)
+players_hands = remove_cards_from_hands(players_hands, all_bids)
+round_winner_scores(round_winner, treasure_drawn, scores)
 
 #############################################
 ###########    T E S T I N G     ###########
 #############################################
 
 print "bids this round: %r" % all_bids   
-print "player %r is the winner: " % foo
-print "treasure_drawn  = *%i*" % treasure_drawn
+print "player %r is the winner: " % round_winner
+print "treasure_drawn  = *%r*" % treasure_drawn
 print "bids = *%r*" % player0bid, player1bid, player2bid, player3bid
 print "players hands", players_hands
-
+print scores
 
