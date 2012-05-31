@@ -4,28 +4,26 @@ from random import randint
 
 
 # Creates a set with values of 1-15
-hand = ([1, 2, 3, 4, 5, 6, 7, 8, 9 ,10, 11, 12, 13, 14, 15])
+hand = set([1, 2, 3, 4, 5, 6, 7, 8, 9 ,10, 11, 12, 13, 14, 15])
 
 # The number of players:
 number_of_players = 4
 
 # Creates all players hands
-players_hands = {0: hand, 1: hand, 2: hand, 3: hand}
+players_hands = [hand, hand, hand, hand]
 
 # Sets players scores to zero
 players_score = [0, 0, 0, 0]
 
 # Creates a set of treasures valued -5-10 
-treasure_deck = ([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5 ,6, 7, 8, 9, 10])
+treasure_deck = set([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5 ,6, 7, 8, 9, 10])
+
 
 # Random pick of a treasure from treasure_deck and removes it from the deck
 def draw_treasure(treasure_deck):
     treasure_drawn = random.sample(treasure_deck, 1)[0]
     treasure_deck.remove(treasure_drawn)
     return treasure_drawn
-
-treasure_drawn = draw_treasure(treasure_deck)
-
 
 # Checks and makes sure that the guess is NOT a string or a word
 def bid_checker(bid, hand):
@@ -122,6 +120,9 @@ def pick_random_ai(treasure, hand):
 
 
 
+treasure_drawn = draw_treasure(treasure_deck)
+
+
 player0bid = player0input(treasure_drawn, players_hands[0])
 # Set up how computers will bid
 player1bid = bid_same(treasure_drawn, players_hands[1])
@@ -149,12 +150,20 @@ def winning_player(bids, treasure):
             return players[0]
     return None
 
-def remove_card_from_hand(bids, hands):
-    print bids
-    print hands
+def remove_cards_from_hands(hands, bids):
+    players = range(len(bids))
+    print "bids", bids
+    for player in players:
+        hands[player].remove(bids[player])
+        print "player", player
+        print "players", players
+    return players_hands
 
 
-remove_card_from_hand(all_bids, players_hands)
+        
+
+
+remove_cards_from_hands(players_hands, all_bids)
 foo = winning_player(all_bids, treasure_drawn)
 
 #############################################
@@ -165,9 +174,6 @@ print "bids this round: %r" % all_bids
 print "player %r is the winner: " % foo
 print "treasure_drawn  = *%i*" % treasure_drawn
 print "bids = *%r*" % player0bid, player1bid, player2bid, player3bid
-
-
-
-
+print "players hands", players_hands
 
 
