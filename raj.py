@@ -2,8 +2,8 @@ import random
 from random import randint
 
 
-number_of_humans = 2
-number_of_computers = 4
+number_of_humans = 4
+number_of_computers = 6
 total_players = number_of_humans + number_of_computers
 list_of_players = range(total_players)
 
@@ -166,6 +166,7 @@ def winning_player_finder(bids, treasure):
         players = bid_dict[bid]
         if len(players) == 1:
             return players[0]
+    print "No one wins this round!"
     return None
 
 def remove_cards_from_hands(hands, bids):
@@ -175,6 +176,9 @@ def remove_cards_from_hands(hands, bids):
     return hands
 
 def round_winner_scores(winner, treasure, scores):
+    print "winner:", winner
+    if winner == None:
+        return scores
     score = scores.pop(winner)
     score += treasure
     scores.insert(winner, score)
