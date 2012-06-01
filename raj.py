@@ -1,4 +1,3 @@
-import collections
 import random
 from random import randint
 
@@ -8,14 +7,16 @@ number_of_computers = 3
 total_players = number_of_humans + number_of_computers
 list_of_players = range(total_players)
 
-def create_players(players):
+
+# Creates a hand (set) for every player)
+def create_hands(players):
     hands = []
     for player in players:
         hands.append(set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]))
     return hands
 
+players_hands = create_hands(list_of_players)
 
-players_hands = create_players(list_of_players)
 
 # Sets players scores to zero
 def create_scores(players):
@@ -30,29 +31,29 @@ scores = create_scores(list_of_players)
 treasure_deck = set([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5 ,6, 7, 8, 9, 10])
 
 
+#^^^^^^^^  happens only at the beginning of game  ^^^^^^^^^^^#
+#||||||||                                         |||||||||||
+
+
+
 # Random pick of a treasure from treasure_deck and removes it from the deck
 def draw_treasure(treasure_deck):
     treasure_drawn = random.sample(treasure_deck, 1)[0]
     treasure_deck.remove(treasure_drawn)
     return treasure_drawn
 
-# Checks and makes sure that the guess is NOT a string or a word
-def bid_checker(bid, hand):
-    try: 
-        bid = int(bid)
-    except:
-        print "Words are not numbers"
-    return bid 
 
 # Human input
 def human_input(hand, treasure):
     bid = 0
     while bid not in hand:
         print "\nThe treasure is: *%r*" % treasure
-        print "Choose from "
-        print hand
+        print "Choose from ", hand
         bid = raw_input("> ")
-        bid = bid_checker(bid, hand)
+        try:
+            bid = int(bid)
+        except:
+            print "Words are not numbers!"
     return bid
 
 
@@ -123,6 +124,8 @@ def pick_random_ai(treasure, hand):
     return computer_ai_bid
 
 
+def table_builder(humans, computers):
+
 
 
 #############################################
@@ -132,8 +135,9 @@ def pick_random_ai(treasure, hand):
 #def a_players_turn(hands, treasure, seat):
 #    human_input(players_hands[seat])
 
+table_builder(number_of_humans, number_of_computers)
 
-
+# draw the treasure to bid on
 treasure_drawn = draw_treasure(treasure_deck)
 
 
@@ -174,14 +178,15 @@ def remove_cards_from_hands(hands, bids):
 def round_winner_scores(winner, treasure, scores):
     score = scores.pop(winner)
     score += treasure
-    score = scores.insert(winner, score)
+    scores.insert(winner, score)
+    return scores
     
 
 
 
 round_winner = winning_player_finder(all_bids, treasure_drawn)
 players_hands = remove_cards_from_hands(players_hands, all_bids)
-round_winner_scores(round_winner, treasure_drawn, scores)
+scores = round_winner_scores(round_winner, treasure_drawn, scores)
 
 #############################################
 ###########    T E S T I N G     ###########
@@ -193,4 +198,3 @@ print "treasure_drawn  = *%r*" % treasure_drawn
 print "bids = *%r*" % player0bid, player1bid, player2bid, player3bid
 print "players hands", players_hands
 print scores
-
