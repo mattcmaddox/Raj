@@ -2,8 +2,8 @@ import random
 from random import randint
 
 
-number_of_humans = 1
-number_of_computers = 3
+number_of_humans = 2
+number_of_computers = 4
 total_players = number_of_humans + number_of_computers
 list_of_players = range(total_players)
 
@@ -108,7 +108,7 @@ def bid_out(treasure, hand):
 
 # Computer picks a random AI for bidding 
 def pick_random_ai(treasure, hand):
-    i = randint(1, 4)
+    i = randint(1, 5)
     if i == 1:
         print "bid low chosen"
         computer_ai_bid = bid_low(treasure, hand)
@@ -121,33 +121,33 @@ def pick_random_ai(treasure, hand):
     elif i == 4:
         print "bid same chosen"
         computer_ai_bid = bid_same(treasure, hand)
+    elif i == 5:
+        print "bid out chosen"
+        computer_ai_bid = bid_out(treasure, hand)
     return computer_ai_bid
 
 
-def table_builder(humans, computers):
 
+def humans_turn(humans, players_hands, treasure):
+    bids = []
+    humans = range(humans)
+    for human in humans:
+        bid = human_input(players_hands[human], treasure)
+        bids.append(bid)
+    return bids
 
+def computers_turn(computers, players_hands, treasure, humans):
+    bids = []
+    computers = range(computers)
+    for computer in computers:
+        bid = pick_random_ai(treasure, players_hands[(computer + humans)])
+        bids.append(bid)
+    return bids
 
-#############################################
-###########    M    A    I    N   ###########
-#############################################
-
-#def a_players_turn(hands, treasure, seat):
-#    human_input(players_hands[seat])
-
-table_builder(number_of_humans, number_of_computers)
-
-# draw the treasure to bid on
-treasure_drawn = draw_treasure(treasure_deck)
-
-
-player0bid = human_input(players_hands[0], treasure_drawn)
-# Set up how computers will bid
-player1bid = bid_same(treasure_drawn, players_hands[1])
-player2bid = bid_low(treasure_drawn, players_hands[2])
-player3bid = bid_random(players_hands[3])
-
-all_bids = [player0bid, player1bid, player2bid, player3bid]
+def join_bids(human, computer):
+    human.extend(computer)
+    bids = human
+    return bids
 
 def biding_dict_builder(bids):
     bid_dict = {}
@@ -170,7 +170,6 @@ def winning_player_finder(bids, treasure):
 
 def remove_cards_from_hands(hands, bids):
     players = range(len(bids))
-    print "bids", bids
     for player in players:
         hands[player].remove(bids[player])
     return hands
@@ -180,12 +179,24 @@ def round_winner_scores(winner, treasure, scores):
     score += treasure
     scores.insert(winner, score)
     return scores
-    
 
 
+#############################################
+###########    M    A    I    N   ###########
+#############################################
 
+# draw the treasure to bid on
+treasure_drawn = draw_treasure(treasure_deck)
+# Tally all bids for humans and computers
+humans_bids = humans_turn(number_of_humans, players_hands, treasure_drawn)
+computers_bids = computers_turn(number_of_computers, players_hands, treasure_drawn, number_of_humans)
+all_bids = join_bids(humans_bids, computers_bids)
+
+# Pick the winner of this round    
 round_winner = winning_player_finder(all_bids, treasure_drawn)
+# Clean up played cards
 players_hands = remove_cards_from_hands(players_hands, all_bids)
+# Tally up score
 scores = round_winner_scores(round_winner, treasure_drawn, scores)
 
 #############################################
@@ -193,8 +204,13 @@ scores = round_winner_scores(round_winner, treasure_drawn, scores)
 #############################################
 
 print "bids this round: %r" % all_bids   
-print "player %r is the winner: " % round_winner
+print "player %r is the winner " % round_winner
 print "treasure_drawn  = *%r*" % treasure_drawn
-print "bids = *%r*" % player0bid, player1bid, player2bid, player3bid
-print "players hands", players_hands
-print scores
+def test(hands):
+    dog = -1 
+    for hand in hands:
+        dog += 1
+        print "player %r:" % dog, hands[dog]
+    return
+test(players_hands)   
+print "score so far: ", scores
