@@ -2,8 +2,8 @@ import random
 from random import randint
 
 
-number_of_humans = 0
-number_of_computers = 6
+number_of_humans = 1
+number_of_computers = 5
 total_players = number_of_humans + number_of_computers
 list_of_players = range(total_players)
 
@@ -39,9 +39,12 @@ last_round_winner = 0
 
 
 # Random pick of a treasure from treasure_deck and removes it from the deck
-def draw_treasure(treasure_deck):
+def draw_treasure(treasure_deck, last_round_winner, last_round_treasure):
     treasure_drawn = random.sample(treasure_deck, 1)[0]
     treasure_deck.remove(treasure_drawn)
+    if last_round_winner == None:
+        combined_treasure = treasure_drawn + last_round_treasure
+        return combined_treasure
     return treasure_drawn
 
 
@@ -97,7 +100,7 @@ def bid_random(hand):
 # Bidding Method 4 - Bid the same as the treasure
 def bid_same(treasure, hand):
     if treasure < 0:
-        print "treasure drawn was a negative!"
+        #print "treasure drawn was a negative!"
         treasure = -treasure
     bid = find_closest_card(hand, treasure)
     return bid
@@ -113,19 +116,19 @@ def bid_out(treasure, hand):
 def pick_random_ai(treasure, hand):
     i = randint(1, 5)
     if i == 1:
-        print "bid low chosen"
+        #print "bid low chosen"
         computer_ai_bid = bid_low(treasure, hand)
     elif i == 2:
-        print "bid high chosen"
+        #print "bid high chosen"
         computer_ai_bid = bid_high(treasure, hand)
     elif i == 3:
-        print "bid random chosen"
+        #print "bid random chosen"
         computer_ai_bid = bid_random(hand)
     elif i == 4:
-        print "bid same chosen"
+        #print "bid same chosen"
         computer_ai_bid = bid_same(treasure, hand)
     elif i == 5:
-        print "bid out chosen"
+        #print "bid out chosen"
         computer_ai_bid = bid_out(treasure, hand)
     return computer_ai_bid
 
@@ -164,7 +167,7 @@ def biding_dict_builder(bids):
 
 def winning_player_finder(bids, treasure):
     bid_dict = biding_dict_builder(bids)
-    reverse = treasure > 0
+    reverse = treasure >= 0
     for bid in sorted(bid_dict, reverse=reverse):
         players = bid_dict[bid]
         if len(players) == 1:
@@ -179,7 +182,6 @@ def remove_cards_from_hands(hands, bids):
     return hands
 
 def trick_winner_scores(winner, treasure, scores):
-    print "Trick winner:", winner
     if winner == None:
         return scores
     score = scores.pop(winner)
@@ -197,20 +199,15 @@ def game_winner_tie_checker(scores):
     game_winner = scores.index(max(scores))    
     return game_winner
 
-            
 
 #############################################
 ###########    M    A    I    N   ###########
 #############################################
 
 while len(treasure_deck) > 0:
-    #if last_round_winner == None:
-
-    
     
     # draw the treasure to bid on
-    treasure_drawn = draw_treasure(treasure_deck)
-    print "treasure drawn %r, last rounds treasure %r" % (treasure_drawn, last_round_treasure)
+    treasure_drawn = draw_treasure(treasure_deck, last_round_winner, last_round_treasure)
 
     # Tally all bids for humans and computers
     humans_bids = humans_turn(number_of_humans, players_hands, treasure_drawn)
@@ -228,15 +225,18 @@ while len(treasure_deck) > 0:
     last_round_treasure = treasure_drawn
     last_round_winner = trick_winner
 
+    print " Trick winner: ", trick_winner
+    print "         bids:", all_bids
+    print "Scores so far:", scores
+
+game_winner = game_winner_tie_checker(scores)
+print "Player(s) %r wins the game!" % game_winner
+
+
+
 #############################################
 ###########    T E S T I N G     ###########
 #############################################
 
-    #print "bids this trick: %r" % all_bids   
-    #print "player %r is the winner " % trick_winner
-    #print "treasure_drawn  = *%r*" % treasure_drawn
-    print "scores so far: ", scores
 
-game_winner = game_winner_tie_checker(scores)
-print "Player(s) %r wins the game!" % game_winner
     
