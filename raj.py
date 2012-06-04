@@ -2,7 +2,7 @@ import random
 from random import randint
 
 
-number_of_humans = 4
+number_of_humans = 0
 number_of_computers = 6
 total_players = number_of_humans + number_of_computers
 list_of_players = range(total_players)
@@ -30,6 +30,8 @@ scores = create_scores(list_of_players)
 # Creates a set of treasures valued -5-10 
 treasure_deck = set([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5 ,6, 7, 8, 9, 10])
 
+last_round_treasure = None
+last_round_winner = 0
 
 #^^^^^^^^  happens only at the beginning of game  ^^^^^^^^^^^#
 #||||||||                                         |||||||||||
@@ -61,13 +63,14 @@ def human_input(hand, treasure):
 # Finds the closest card in hand - Defaults to return the lower value if equal distance 
 # **might not be true anymore**
 def find_closest_card(hand, target_bid):
-    for diff in range(15):
+    for diff in range(40):
         bid = target_bid + diff
         if bid in hand:
             return bid
         bid = target_bid - diff
         if bid in hand:
             return bid
+    print "ERROR 23: Bid out of range!"
 
 
 
@@ -166,7 +169,7 @@ def winning_player_finder(bids, treasure):
         players = bid_dict[bid]
         if len(players) == 1:
             return players[0]
-    print "No one wins this round!"
+    print "No one wins this trick!  Treasure carries over to next round."
     return None
 
 def remove_cards_from_hands(hands, bids):
@@ -175,8 +178,8 @@ def remove_cards_from_hands(hands, bids):
         hands[player].remove(bids[player])
     return hands
 
-def round_winner_scores(winner, treasure, scores):
-    print "winner:", winner
+def trick_winner_scores(winner, treasure, scores):
+    print "Trick winner:", winner
     if winner == None:
         return scores
     score = scores.pop(winner)
@@ -184,37 +187,56 @@ def round_winner_scores(winner, treasure, scores):
     scores.insert(winner, score)
     return scores
 
+def game_winner_tie_checker(scores):
+    number_of_winners = scores.count(max(scores))
+    winners = list()
+    if number_of_winners > 1:
+        winners = [i for i,x in enumerate(scores) if x == max(scores)]
+        print "There are %r winners for this game!" % number_of_winners
+        return winners
+    game_winner = scores.index(max(scores))    
+    return game_winner
+
+            
 
 #############################################
 ###########    M    A    I    N   ###########
 #############################################
 
-# draw the treasure to bid on
-treasure_drawn = draw_treasure(treasure_deck)
-# Tally all bids for humans and computers
-humans_bids = humans_turn(number_of_humans, players_hands, treasure_drawn)
-computers_bids = computers_turn(number_of_computers, players_hands, treasure_drawn, number_of_humans)
-all_bids = join_bids(humans_bids, computers_bids)
+while len(treasure_deck) > 0:
+    #if last_round_winner == None:
 
-# Pick the winner of this round    
-round_winner = winning_player_finder(all_bids, treasure_drawn)
-# Clean up played cards
-players_hands = remove_cards_from_hands(players_hands, all_bids)
-# Tally up score
-scores = round_winner_scores(round_winner, treasure_drawn, scores)
+    
+    
+    # draw the treasure to bid on
+    treasure_drawn = draw_treasure(treasure_deck)
+    print "treasure drawn %r, last rounds treasure %r" % (treasure_drawn, last_round_treasure)
+
+    # Tally all bids for humans and computers
+    humans_bids = humans_turn(number_of_humans, players_hands, treasure_drawn)
+    computers_bids = computers_turn(number_of_computers, players_hands, treasure_drawn, number_of_humans)
+    all_bids = join_bids(humans_bids, computers_bids)
+
+    # Pick the winner of this trick    
+    trick_winner = winning_player_finder(all_bids, treasure_drawn)
+    # Clean up played cards
+    players_hands = remove_cards_from_hands(players_hands, all_bids)
+    # Tally up score
+    scores = trick_winner_scores(trick_winner, treasure_drawn, scores)
+
+    # If no one wins a trick, the treasure carries over
+    last_round_treasure = treasure_drawn
+    last_round_winner = trick_winner
 
 #############################################
 ###########    T E S T I N G     ###########
 #############################################
 
-print "bids this round: %r" % all_bids   
-print "player %r is the winner " % round_winner
-print "treasure_drawn  = *%r*" % treasure_drawn
-def test(hands):
-    dog = -1 
-    for hand in hands:
-        dog += 1
-        print "player %r:" % dog, hands[dog]
-    return
-test(players_hands)   
-print "score so far: ", scores
+    #print "bids this trick: %r" % all_bids   
+    #print "player %r is the winner " % trick_winner
+    #print "treasure_drawn  = *%r*" % treasure_drawn
+    print "scores so far: ", scores
+
+game_winner = game_winner_tie_checker(scores)
+print "Player(s) %r wins the game!" % game_winner
+    
