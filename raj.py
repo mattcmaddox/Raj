@@ -224,19 +224,12 @@ while len(treasure_deck) > 0:
     # If no one wins a trick, the treasure carries over
     last_round_treasure = treasure_drawn
     last_round_winner = trick_winner
-
+    
     print " Trick winner: ", trick_winner
     print "         bids:", all_bids
     print "Scores so far:", scores
 
 game_winner = game_winner_tie_checker(scores)
 print "Player(s) %r wins the game!" % game_winner
-
-
-
-#############################################
-###########    T E S T I N G     ###########
-#############################################
-
 
     
