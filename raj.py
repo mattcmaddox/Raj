@@ -42,7 +42,7 @@ last_round_winner = 0
 def draw_treasure(treasure_deck, last_round_winner, last_round_treasure):
     treasure_drawn = random.sample(treasure_deck, 1)[0]
     treasure_deck.remove(treasure_drawn)
-    if last_round_winner == None:
+    if last_round_winner is None:
         combined_treasure = treasure_drawn + last_round_treasure
         return combined_treasure
     return treasure_drawn
@@ -132,7 +132,14 @@ def pick_random_ai(treasure, hand):
         computer_ai_bid = bid_out(treasure, hand)
     return computer_ai_bid
 
+computer_bidding_methods = [pick_random_ai, pick_random_ai, pick_random_ai, pick_random_ai, pick_random_ai]
 
+def new_computers_turn(computer_bidding_methods, players_hands, treasure):
+    bids = []
+    for bidf, hand in zip(computer_bidding_methods, players_hands):
+        bid = bidf(treasure, hand)
+        bids.append(bid)
+    return bids
 
 def humans_turn(humans, players_hands, treasure):
     bids = []
@@ -176,6 +183,7 @@ def winning_player_finder(bids, treasure):
     return None
 
 def remove_cards_from_hands(hands, bids):
+    print "bids!!", bids
     players = range(len(bids))
     for player in players:
         hands[player].remove(bids[player])
@@ -211,9 +219,9 @@ while len(treasure_deck) > 0:
 
     # Tally all bids for humans and computers
     humans_bids = humans_turn(number_of_humans, players_hands, treasure_drawn)
-    computers_bids = computers_turn(number_of_computers, players_hands, treasure_drawn, number_of_humans)
+    computers_bids = new_computers_turn(computer_bidding_methods, players_hands, treasure_drawn)
+    #computers_bids = computers_turn(number_of_computers, players_hands, treasure_drawn, number_of_humans)
     all_bids = join_bids(humans_bids, computers_bids)
-
     # Pick the winner of this trick    
     trick_winner = winning_player_finder(all_bids, treasure_drawn)
     # Clean up played cards
