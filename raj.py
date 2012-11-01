@@ -60,6 +60,12 @@ def bidding_dict_builder(bids):
             bid_dict[bid] = [player]
     return bid_dict
 
+################
+# Finds the value of the treasure based on number of players in game
+def relative_treasure_value_determiner(total_players, treasure_drawn):
+    relative_treasure_value = round(0.0666666 * (35 - (40 / float(total_players))) * treasure_drawn, 2)
+    return relative_treasure_value
+
 def xxdetermine_efficiency(bids, treasure):
     efficiency = []
     for i in bids:
@@ -80,24 +86,38 @@ def determine_trick_efficiency(bids, treasure):
         trick_efficiency.append(treasure - i)
     return trick_efficiency
 
-def efficiency_tracker(total_efficiency, trick_efficiency):
-    dog = [sum(i) for i in zip(total_efficiency, trick_efficiency)]
-    print "dog", dog
-
-def empty_efficiency_builder(list_of_players):
+def empty_stat_builder(list_of_players):
     empty = []
     for i in list_of_players:
         empty.append(0)
-    print "empty", empty
     return empty
 
+def remaining_bids_finder(players_hands):
+    bids = []
+    for i in players_hands:
+        bids.append(sum(i))
+    return bids
 
+def list_zipper(total_efficiency, trick_efficiency):
+    current = [sum(i) for i in zip(total_efficiency, trick_efficiency)]
+    return current
 
+def winner_stat_tracker(winner, total_stat, trick_stat):
+    if winner == None:
+        pass
+    elif winner == len(total_stat):
+        total_stat.append(total_stat.pop(winner) + trick_stat[winner])
+    else:
+        total_stat.insert(winner, (total_stat.pop(winner) + trick_stat[winner]))
+    return total_stat
+
+###################
 def winning_player_finder(bids, treasure):
     bid_dict = bidding_dict_builder(bids)
     reverse = treasure >= 0
     for bid in sorted(bid_dict, reverse=reverse):
         players = bid_dict[bid]
+        # For single player games
         if len(players) == 1:
             return players[0]
     print "\nNo one wins this trick!  Treasure carries over to next round.", "\n"
@@ -149,7 +169,7 @@ def human_input(hand, treasure, treasure_deck, human):
     return bid
 
 # Computer
-def new_computer_turn(computer_bidding_methods, players_hands, treasure, humans):
+def computer_turn(computer_bidding_methods, players_hands, treasure, humans):
     bids = []
     for i in computer_bidding_methods:
         bid = i(treasure, players_hands[humans])
@@ -245,14 +265,13 @@ def main():
     """Raj, a bidding game of perfect information
     $raj.py [humans] [computers]
     """
-
     games_won = 0
     args = build_parser()
     number_of_humans = args.get('humans')
     number_of_computers = args.get('computers')
-    print "args!", args
-    print number_of_humans
-    print number_of_computers
+    #print "args!", args
+    #print number_of_humans
+    #print number_of_computers
     total_players = number_of_humans + number_of_computers
     list_of_players = range(total_players)
     players_hands = create_hands(list_of_players)
@@ -261,43 +280,60 @@ def main():
     last_round_treasure = None
     last_round_winner = 0
     all_bids = []
-    total_efficiency = empty_efficiency_builder(list_of_players)
-    
-    ######   SET HOW THE COMPUTER PLAYS   ######
+    total_efficiency = empty_stat_builder(list_of_players)
+    winner_efficiency = empty_stat_builder(list_of_players)
+    trick_winner_tally = empty_stat_builder(list_of_players)
+    # How the computer plays
     computer_bidding_methods = build_computer_bidding_methods_list(number_of_computers)
+
     
+    # Trick Loop
     while len(treasure_deck) > 0:
+        total_bids_remaining = remaining_bids_finder(players_hands)
+        print "bids remaining", total_bids_remaining
+        treasure_points_remaining = sum(treasure_deck)
+        print "points remaining", treasure_points_remaining
+
         # Draw the treasure to bid on
         treasure_drawn = draw_treasure(treasure_deck, last_round_winner, last_round_treasure)
 
-        value_of_treasure = round(0.0666666 * (35 - (40 / float(total_players))) * treasure_drawn, 2)
-        #value_of_treasure = round(value_of_treasure, 2)
-        print "value of treasures", value_of_treasure
-
         # Tally all bids for humans and computers
         humans_bids = humans_turn(number_of_humans, players_hands, treasure_drawn, treasure_deck, all_bids)
-        computers_bids = new_computer_turn(computer_bidding_methods, players_hands, treasure_drawn, number_of_humans)
-        
+        computers_bids = computer_turn(computer_bidding_methods, players_hands, treasure_drawn, number_of_humans)
         all_bids = join_bids(humans_bids, computers_bids)
+
         # Find the winner of this trick    
         trick_winner = winning_player_finder(all_bids, treasure_drawn)
 
+        # Stats
+        #relative_treasure_value = round(0.0666666 * (35 - (40 / float(total_players))) * treasure_drawn, 2)
+        #relative_treasure_value = round(relative_treasure_value, 2)
+        relative_treasure_value = relative_treasure_value_determiner(total_players, treasure_drawn)
+        print "relative treasure value", relative_treasure_value
+
         # Find efficiency of all bids per trick
         trick_efficiency = determine_trick_efficiency(all_bids, treasure_drawn)
+        #trick_efficiency = determine_trick_efficiency(all_bids, relative_treasure_value)
         print "trick efficiency", trick_efficiency
-        efficiency_tracker(total_efficiency, trick_efficiency)
+
+        # How efficient is the player who won the trick?
+        winner_efficiency = winner_stat_tracker(trick_winner, winner_efficiency, trick_efficiency)
+        print "winner_efficiency", winner_efficiency
 
         # Clean up played cards
         players_hands = remove_cards_from_hands(players_hands, all_bids)
         # Tally up score
         scores = trick_winner_scores(trick_winner, treasure_drawn, scores)
+        
         # If no one wins a trick, the treasure carries over
         last_round_treasure = treasure_drawn
         last_round_winner = trick_winner
         
+        print "     Treasure: *%r*" % treasure_drawn
         print " Trick winner: <%r>" % trick_winner
-        print " Cards Played: %r" % all_bids
-        print "Scores so far: %r" % scores
+        print " Cards played: %r" % all_bids
+        print "Scores so far: %r\n" % scores
+
 
     # Game is Finished!
     game_winner = game_winner_tie_checker(scores)
