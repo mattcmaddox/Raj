@@ -7,12 +7,12 @@ from random import randint
 
 # Builds Command Line Argument Parser
 def build_parser():
-    parser = argparse.ArgumentParser(description='Command Line Implementation of the Game Raj', add_help=False)
-    parser.add_argument('-h', '--humans', type=int, default=1, help='Number of Human Players')
-    parser.add_argument('-c', '--computers', type=int, default=5, help='Number of Computer Players')
+    parser = argparse.ArgumentParser(description='Command Line Implementation of the Game Raj')#add_help=False)
+    #parser.add_argument('-h', '--humans', type=int, default=1, help='Number of Human Players')
+    #parser.add_argument('-c', '--computers', type=int, default=5, help='Number of Computer Players')
     parser.add_argument('humans', type=int, nargs='?', default=1, help='Positionial Argument for Number of Humans')
     parser.add_argument('computers', type=int, nargs='?', default=5, help='Positionial Argument for Number of Computers')
-    parser.add_argument('--help', action='store_true')
+    #parser.add_argument('--help', action='store_true')
     args = vars(parser.parse_args())
     return args
 
@@ -155,10 +155,10 @@ def humans_turn(humans, players_hands, treasure, treasure_deck, all_bids):
 def human_input(hand, treasure, treasure_deck, human):
     bid = 0
     while bid not in hand:
-        print "\n      Turn: Player %r" % human
-        print "The treasure is: *%r*" % treasure
-        print "Choose from your hand: ", hand
-        print "Treasures   remaining: ", treasure_deck
+        print "                 Turn: Player %r" % human
+        print "      The treasure is: *%r*" % treasure
+        print "Choose from your hand: ", sorted(hand)
+        print "Treasures   remaining: ", sorted(treasure_deck)
         bid = raw_input("\n> ")
         try:
             bid = int(bid)
@@ -266,6 +266,7 @@ def main():
     $raj.py [humans] [computers]
     """
     games_won = 0
+    trick_number = 0
     args = build_parser()
     number_of_humans = args.get('humans')
     number_of_computers = args.get('computers')
@@ -289,6 +290,8 @@ def main():
     
     # Trick Loop
     while len(treasure_deck) > 0:
+        trick_number += 1
+        # Stats (Easy Mode)
         total_bids_remaining = remaining_bids_finder(players_hands)
         print "bids remaining", total_bids_remaining
         treasure_points_remaining = sum(treasure_deck)
@@ -298,6 +301,7 @@ def main():
         treasure_drawn = draw_treasure(treasure_deck, last_round_winner, last_round_treasure)
 
         # Tally all bids for humans and computers
+        print "\n                Trick: #%d" % trick_number
         humans_bids = humans_turn(number_of_humans, players_hands, treasure_drawn, treasure_deck, all_bids)
         computers_bids = computer_turn(computer_bidding_methods, players_hands, treasure_drawn, number_of_humans)
         all_bids = join_bids(humans_bids, computers_bids)
@@ -343,3 +347,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
